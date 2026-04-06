@@ -84,6 +84,10 @@ func (c *csmsClient) GetSecret(ctx context.Context, ref esv1.ExternalSecretDataR
 		return decoded, nil
 	}
 
+	if result.Version.SecretString == "" && result.Version.SecretBinary == "" {
+		return nil, fmt.Errorf("huaweicloud: secret %q returned no secret_string or secret_binary", ref.Key)
+	}
+
 	if ref.Property != "" {
 		value, err = extractJSONProperty(value, ref.Property)
 		if err != nil {
@@ -115,7 +119,10 @@ func (c *csmsClient) GetSecretMap(ctx context.Context, ref esv1.ExternalSecretDa
 		case string:
 			result[k] = []byte(val)
 		default:
-			b, _ := json.Marshal(val)
+			b, err := json.Marshal(val)
+			if err != nil {
+				return nil, fmt.Errorf("huaweicloud: GetSecretMap: marshal key %q: %w", k, err)
+			}
 			result[k] = b
 		}
 	}
@@ -165,7 +172,10 @@ func extractJSONProperty(jsonStr, property string) (string, error) {
 	case string:
 		return v, nil
 	default:
-		b, _ := json.Marshal(v)
+		b, err := json.Marshal(v)
+		if err != nil {
+			return "", fmt.Errorf("huaweicloud: marshal property %q value: %w", property, err)
+		}
 		return string(b), nil
 	}
 }

@@ -116,6 +116,11 @@ type SecretStoreProvider struct {
 	// +optional
 	Github *GithubProvider `json:"github,omitempty"`
 
+	// HuaweiCloud configures this store to sync secrets using Huawei Cloud Stack
+	// Cloud Secret Management Service (CSMS).
+	// +optional
+	HuaweiCloud *HuaweiCloudProvider `json:"huaweicloud,omitempty"`
+
 	// GitLab configures this store to sync secrets using GitLab Variables provider
 	// +optional
 	Gitlab *GitlabProvider `json:"gitlab,omitempty"`

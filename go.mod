@@ -36,6 +36,7 @@ replace (
 	github.com/external-secrets/external-secrets/providers/v1/gcp => ./providers/v1/gcp
 	github.com/external-secrets/external-secrets/providers/v1/github => ./providers/v1/github
 	github.com/external-secrets/external-secrets/providers/v1/gitlab => ./providers/v1/gitlab
+	github.com/external-secrets/external-secrets/providers/v1/huaweicloud => ./providers/v1/huaweicloud
 	github.com/external-secrets/external-secrets/providers/v1/ibm => ./providers/v1/ibm
 	github.com/external-secrets/external-secrets/providers/v1/infisical => ./providers/v1/infisical
 	github.com/external-secrets/external-secrets/providers/v1/keepersecurity => ./providers/v1/keepersecurity
@@ -149,6 +150,7 @@ require (
 	github.com/external-secrets/external-secrets/providers/v1/gcp v0.0.0-20251104073127-4d2c8fd13e10
 	github.com/external-secrets/external-secrets/providers/v1/github v0.0.0-00010101000000-000000000000
 	github.com/external-secrets/external-secrets/providers/v1/gitlab v0.0.0-00010101000000-000000000000
+	github.com/external-secrets/external-secrets/providers/v1/huaweicloud v0.0.0-00010101000000-000000000000
 	github.com/external-secrets/external-secrets/providers/v1/ibm v0.0.0-00010101000000-000000000000
 	github.com/external-secrets/external-secrets/providers/v1/infisical v0.0.0-00010101000000-000000000000
 	github.com/external-secrets/external-secrets/providers/v1/keepersecurity v0.0.0-00010101000000-000000000000

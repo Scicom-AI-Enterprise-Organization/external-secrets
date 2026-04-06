@@ -23,9 +23,11 @@ import esmeta "github.com/external-secrets/external-secrets/apis/meta/v1"
 type HuaweiCloudProvider struct {
 	// Endpoint is the full CSMS base URL.
 	// Example: https://csms.cn-north-4.myhuaweicloud.com
+	// +kubebuilder:validation:MinLength=1
 	Endpoint string `json:"endpoint"`
 
 	// ProjectID is the HCS project ID.
+	// +kubebuilder:validation:MinLength=1
 	ProjectID string `json:"projectID"`
 
 	// Auth configures how the operator authenticates with CSMS.
@@ -33,17 +35,22 @@ type HuaweiCloudProvider struct {
 }
 
 // HuaweiCloudAuth holds the authentication configuration for HCS CSMS.
+// +kubebuilder:validation:MinProperties=1
+// +kubebuilder:validation:MaxProperties=1
 type HuaweiCloudAuth struct {
 	// SecretRef references Kubernetes Secrets containing the AK and SK.
-	SecretRef HuaweiCloudAuthSecretRef `json:"secretRef"`
+	// +optional
+	SecretRef *HuaweiCloudAuthSecretRef `json:"secretRef,omitempty"`
 }
 
 // HuaweiCloudAuthSecretRef references Kubernetes Secrets holding the
 // Access Key (AK) and Secret Key (SK) for HCS AK/SK authentication.
 type HuaweiCloudAuthSecretRef struct {
 	// AccessKeySecretRef points to the Kubernetes Secret key holding the Access Key (AK).
-	AccessKeySecretRef esmeta.SecretKeySelector `json:"accessKeySecretRef"`
+	// +optional
+	AccessKeySecretRef esmeta.SecretKeySelector `json:"accessKeySecretRef,omitempty"`
 
 	// SecretKeySecretRef points to the Kubernetes Secret key holding the Secret Key (SK).
-	SecretKeySecretRef esmeta.SecretKeySelector `json:"secretKeySecretRef"`
+	// +optional
+	SecretKeySecretRef esmeta.SecretKeySelector `json:"secretKeySecretRef,omitempty"`
 }

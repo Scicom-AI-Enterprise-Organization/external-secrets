@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/http"
+	"net/url"
 	"sort"
 	"strings"
 	"time"
@@ -58,6 +59,7 @@ func signWithDate(req *http.Request, ak, sk, ts string) {
 		buildCanonicalQuery(req),
 		canonHeaders.String(),
 		signedHeaders,
+		// Body signing is not required for CSMS GET requests; always use the empty-string hash.
 		hexSHA256([]byte("")),
 	}, "\n")
 
@@ -89,7 +91,7 @@ func buildCanonicalQuery(req *http.Request) string {
 		vals := q[k]
 		sort.Strings(vals)
 		for _, v := range vals {
-			parts = append(parts, k+"="+v)
+			parts = append(parts, url.QueryEscape(k)+"="+url.QueryEscape(v))
 		}
 	}
 	return strings.Join(parts, "&")

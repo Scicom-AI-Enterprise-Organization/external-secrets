@@ -24,6 +24,92 @@ Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 
 Multiple people and organizations are joining efforts to create a single External Secrets solution based on existing projects. If you are curious about the origins of this project, check out [this issue](https://github.com/external-secrets/kubernetes-external-secrets/issues/47) and [this PR](https://github.com/external-secrets/kubernetes-external-secrets/pull/477).
 
+## Huawei Cloud Stack (HCS) CSMS Provider
+
+This fork adds a **Huawei Cloud Stack CSMS** provider for environments running on HCS (Huawei Cloud Stack) — an on-premises Huawei cloud platform.
+
+### Features
+
+- Syncs secrets from HCS Cloud Secret Management Service (CSMS) into Kubernetes Secrets
+- Authenticates using AK/SK (HMAC-SHA256) — no OAuth or IAM token exchange required
+- Supports plain string secrets, binary secrets, and structured JSON secrets
+- Read-only provider (GetSecret, GetSecretMap, GetAllSecrets)
+
+### Usage
+
+Create a Kubernetes Secret holding your AK/SK credentials:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hcs-aksk
+  namespace: default
+stringData:
+  accessKey: <your-access-key>
+  secretKey: <your-secret-key>
+```
+
+Create a `SecretStore` pointing to your HCS CSMS endpoint:
+
+```yaml
+apiVersion: external-secrets.io/v1
+kind: SecretStore
+metadata:
+  name: hcs-csms
+  namespace: default
+spec:
+  provider:
+    huaweicloud:
+      endpoint: "https://csms.<region>.example.com"
+      projectID: "<your-project-id>"
+      auth:
+        secretRef:
+          accessKeySecretRef:
+            name: hcs-aksk
+            key: accessKey
+          secretKeySecretRef:
+            name: hcs-aksk
+            key: secretKey
+```
+
+Create an `ExternalSecret` to sync a secret:
+
+```yaml
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: my-secret
+  namespace: default
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: hcs-csms
+    kind: SecretStore
+  target:
+    name: my-k8s-secret
+  data:
+    - secretKey: password
+      remoteRef:
+        key: my-csms-secret-name
+```
+
+### Installation
+
+The operator image is published to:
+
+```
+swr.my-kualalumpur-1.alphaedge.tmone.com.my/scicom-aies-swr/external-secrets:latest
+```
+
+Deploy using the Helm chart in `deploy/charts/external-secrets`, overriding the image:
+
+```bash
+helm install external-secrets deploy/charts/external-secrets \
+  --set image.repository=swr.my-kualalumpur-1.alphaedge.tmone.com.my/scicom-aies-swr/external-secrets \
+  --set image.tag=latest
+```
+
 ## Documentation
 
 External Secrets Operator guides and reference documentation is available at [external-secrets.io](https://external-secrets.io). Also see our [stability and support](https://external-secrets.io/main/introduction/stability-support/) policy.

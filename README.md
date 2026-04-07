@@ -33,7 +33,24 @@ This fork adds a **Huawei Cloud Stack CSMS** provider for environments running o
 - Syncs secrets from HCS Cloud Secret Management Service (CSMS) into Kubernetes Secrets
 - Authenticates using AK/SK (HMAC-SHA256) — no OAuth or IAM token exchange required
 - Supports plain string secrets, binary secrets, and structured JSON secrets
-- Read-only provider (GetSecret, GetSecretMap, GetAllSecrets)
+- Read-only provider (GetSecret, GetSecretMap)
+- TLS verification disabled for HCS self-signed certificates
+
+### Finding the endpoint
+
+CSMS is a sub-service of DEW (Data Encryption Workshop) and shares the **KMS endpoint**. The endpoint is **not** `csms.<region>` — it is `kms.<region>`.
+
+To find the correct endpoint, check which host has CSMS APIs published:
+
+```bash
+# This should return an auth error (meaning the API exists):
+curl -k https://kms.<region>.<domain>/v1/<project_id>/secrets/<secret_name>
+
+# If you get APIGW.0101 ("API does not exist"), try the internal domain:
+curl -k https://kms.<region>.myhuaweicloud.com/v1/<project_id>/secrets/<secret_name>
+```
+
+The project ID can be found in **IAM > Projects** in the HCS console.
 
 ### Usage
 
@@ -44,36 +61,37 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: hcs-aksk
-  namespace: default
+  namespace: external-secrets
 stringData:
-  accessKey: <your-access-key>
-  secretKey: <your-secret-key>
+  access-key: <your-access-key>
+  secret-key: <your-secret-key>
 ```
 
-Create a `SecretStore` pointing to your HCS CSMS endpoint:
+Create a `ClusterSecretStore` pointing to your HCS CSMS endpoint:
 
 ```yaml
 apiVersion: external-secrets.io/v1
-kind: SecretStore
+kind: ClusterSecretStore
 metadata:
-  name: hcs-csms
-  namespace: default
+  name: huawei-csms
 spec:
   provider:
     huaweicloud:
-      endpoint: "https://csms.<region>.example.com"
+      endpoint: "https://kms.<region>.<domain>"
       projectID: "<your-project-id>"
       auth:
         secretRef:
           accessKeySecretRef:
             name: hcs-aksk
-            key: accessKey
+            namespace: external-secrets
+            key: access-key
           secretKeySecretRef:
             name: hcs-aksk
-            key: secretKey
+            namespace: external-secrets
+            key: secret-key
 ```
 
-Create an `ExternalSecret` to sync a secret:
+Create an `ExternalSecret` to sync a single key from a secret:
 
 ```yaml
 apiVersion: external-secrets.io/v1
@@ -84,17 +102,44 @@ metadata:
 spec:
   refreshInterval: 1h
   secretStoreRef:
-    name: hcs-csms
-    kind: SecretStore
+    name: huawei-csms
+    kind: ClusterSecretStore
   target:
     name: my-k8s-secret
   data:
     - secretKey: password
       remoteRef:
         key: my-csms-secret-name
+        property: password
+```
+
+To extract all key-value pairs from a JSON secret:
+
+```yaml
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: my-secret
+  namespace: default
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: huawei-csms
+    kind: ClusterSecretStore
+  target:
+    name: my-k8s-secret
+  dataFrom:
+    - extract:
+        key: my-csms-secret-name
 ```
 
 ### Installation
+
+The CRDs must be installed separately before deploying the Helm chart:
+
+```bash
+kubectl apply -f deploy/crds/bundle.yaml
+```
 
 The operator image is published to:
 
@@ -106,6 +151,7 @@ Deploy using the Helm chart in `deploy/charts/external-secrets`, overriding the 
 
 ```bash
 helm install external-secrets deploy/charts/external-secrets \
+  --namespace external-secrets --create-namespace \
   --set image.repository=swr.my-kualalumpur-1.alphaedge.tmone.com.my/scicom-aies-swr/external-secrets \
   --set image.tag=latest
 ```

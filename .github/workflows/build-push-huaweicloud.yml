@@ -63,6 +63,8 @@ jobs:
           file: Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64,linux/s390x,linux/ppc64le
+          provenance: false
+          sbom: false
           tags: |
             ${{ env.SWR_REGISTRY }}/${{ env.SWR_IMAGE_REPO }}:${{ steps.tag.outputs.tag }}
             ${{ env.SWR_REGISTRY }}/${{ env.SWR_IMAGE_REPO }}:latest

@@ -46,18 +46,18 @@ jobs:
         include:
         - dockerfile: "Dockerfile"
           build-args: "CGO_ENABLED=0"
-          build-arch: "amd64 arm64 ppc64le"
-          build-platform: "linux/amd64,linux/arm64,linux/ppc64le"
+          build-arch: "amd64 arm64"
+          build-platform: "linux/amd64,linux/arm64"
           tag-suffix: "-${{ needs.checkout.outputs.timestamp }}" # distroless
         - dockerfile: "Dockerfile.ubi"
           build-args: "CGO_ENABLED=0"
-          build-arch: "amd64 arm64 ppc64le"
-          build-platform: "linux/amd64,linux/arm64,linux/ppc64le"
+          build-arch: "amd64 arm64"
+          build-platform: "linux/amd64,linux/arm64"
           tag-suffix: "-ubi-${{ needs.checkout.outputs.timestamp }}" # ubi
         - dockerfile: "Dockerfile.ubi"
           build-args: "CGO_ENABLED=0 GOEXPERIMENT=boringcrypto" # fips
-          build-arch: "amd64 ppc64le"
-          build-platform: "linux/amd64,linux/ppc64le"
+          build-arch: "amd64 arm64"
+          build-platform: "linux/amd64,linux/arm64"
           tag-suffix: "-ubi-boringssl-${{ needs.checkout.outputs.timestamp }}"
     with:
       dockerfile: ${{ matrix.dockerfile }}

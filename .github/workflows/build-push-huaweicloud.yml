@@ -50,7 +50,7 @@ jobs:
 
       - name: Build binaries
         run: |
-          for ARCH in amd64 arm64 s390x ppc64le; do
+          for ARCH in amd64 arm64; do
             CGO_ENABLED=0 GOOS=linux GOARCH=${ARCH} \
               go build -tags all_providers \
               -o bin/external-secrets-linux-${ARCH} main.go
@@ -62,7 +62,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64,linux/s390x,linux/ppc64le
+          platforms: linux/amd64,linux/arm64
           provenance: false
           sbom: false
           tags: |

@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -60,11 +61,12 @@ func (c *csmsClient) GetSecret(ctx context.Context, ref esv1.ExternalSecretDataR
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusNotFound {
-		return nil, esv1.NoSecretError{}
-	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("huaweicloud: unexpected status %d", resp.StatusCode)
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		if resp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("huaweicloud: secret %q not found (404, url=%s): %s: %w", ref.Key, url, string(body), esv1.NoSecretError{})
+		}
+		return nil, fmt.Errorf("huaweicloud: unexpected status %d (url=%s): %s", resp.StatusCode, url, string(body))
 	}
 
 	var result secretVersionResponse

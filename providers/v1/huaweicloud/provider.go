@@ -2,6 +2,7 @@ package huaweicloud
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 
@@ -66,7 +67,11 @@ func (p *Provider) NewClient(ctx context.Context, store esv1.GenericStore, kube 
 		projectID: hc.ProjectID,
 		ak:        ak,
 		sk:        sk,
-		http:      &http.Client{},
+		http: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, //nolint:gosec // HCS uses self-signed certificates
+			},
+		},
 	}, nil
 }
 

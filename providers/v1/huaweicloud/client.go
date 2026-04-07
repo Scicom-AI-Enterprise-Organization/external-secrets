@@ -45,7 +45,7 @@ func (c *csmsClient) GetSecret(ctx context.Context, ref esv1.ExternalSecretDataR
 	if version == "" {
 		version = "latest"
 	}
-	url := fmt.Sprintf("%s/v1/%s/secrets/%s/versions/%s/",
+	url := fmt.Sprintf("%s/v1/%s/secrets/%s/versions/%s",
 		strings.TrimRight(c.endpoint, "/"), c.projectID, ref.Key, version)
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)

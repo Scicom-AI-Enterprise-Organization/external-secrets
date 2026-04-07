@@ -52,6 +52,11 @@ func signWithDate(req *http.Request, ak, sk, ts string) {
 	if canonURI == "" {
 		canonURI = "/"
 	}
+	// APIG normalizes paths by appending a trailing slash before verifying
+	// the signature. Match that behaviour so signatures are accepted.
+	if !strings.HasSuffix(canonURI, "/") {
+		canonURI += "/"
+	}
 
 	canonRequest := strings.Join([]string{
 		req.Method,
